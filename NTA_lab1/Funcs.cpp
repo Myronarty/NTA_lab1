@@ -2,14 +2,14 @@
 
 pair<uint64_t, uint64_t> lob(uint64_t p)
 {
-	uint64_t n = sqrt(p);
-	for (int i = 2; i <= n; i++)
+	int n[15] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 };
+	for (int i = 2; i <= 15; i++)
 	{
-		uint64_t d = p / i;
+		uint64_t d = p / n[i];
 		if (i * d == p)
 		{
-			cout << p << " isn't prime, here its dividers: " << i << ", " << d << endl;
-			return pair(i, d);
+			cout << p << " isn't prime, here its dividers: " << n[i] << ", " << d << endl;
+			return pair(n[i], d);
 		}
 	}
 	cout << p << " isn prime, nothing found ( :) / :( ? )" << endl;
@@ -120,8 +120,53 @@ void SSh(uint64_t p, int tochnist, pair<uint64_t, uint64_t> c)
 	}
 }
 
-pair<uint64_t, uint64_t> Pol(uint64_t p)
+uint64_t func(const vector<unsigned int>& f, uint64_t p, uint64_t x)
 {
+	uint64_t rez = f[0];
+	for (int i = 1; i < f.size(); i++)
+	{
+		if (f[i] != 0)
+		{
+			rez = (rez + pow_mod(x, f[i], p)) % p;
+		}
+	}
+	return rez;
+}
+
+pair<uint64_t, uint64_t> Pol(uint64_t p, uint64_t x_0, vector<unsigned int> f)
+{
+	uint64_t x = func(f, p, x_0);
+	uint64_t y = func(f, p, func(f, p, x_0));
+	bool t = 1;
+	while (t)
+	{
+		if(x > y)
+		{
+			uint64_t d = gcd(x - y, p);
+			if (d > 1)
+			{
+				cout << p << " isn't prime, here its dividers: " << p / d << ", " << d << endl;
+				return pair(d, p / d);
+			}
+			x = func(f, p, x);
+			y = func(f, p, func(f, p, y));
+		}
+		else if (x < y)
+		{
+			uint64_t d = gcd(y - x, p);
+			if (d > 1)
+			{
+				cout << p << " isn't prime, here its dividers: " << p / d << ", " << d << endl;
+				return pair(d, p / d);
+			}
+			x = func(f, p, x);
+			y = func(f, p, func(f, p, y));
+		}
+		else
+		{
+			return Pol(p, x_0 + 1, f);
+		}
+	}
 
 	return pair(1, p);
 }
