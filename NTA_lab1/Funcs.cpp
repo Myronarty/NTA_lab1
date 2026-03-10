@@ -171,8 +171,39 @@ pair<uint64_t, uint64_t> Pol(uint64_t p, uint64_t x_0, vector<unsigned int> f)
 	return pair(1, p);
 }
 
+double loog(double x, double base)
+{
+	return log(x) / log(base);
+}
+
+vector<bool> sdvig_po_faze(int* B, int size, uint64_t x)
+{
+	vector<bool> rez;
+	for (int i = 0; i < size; i++)
+	{
+		int d = gcd(x, B[i]);
+		if (d > 1)
+		{
+			int k = loog(d, B[i]);
+			if (k & 1)
+			{
+				rez.push_back(1);
+			}
+			else
+			{
+				rez.push_back(0);
+			}
+		}
+		else
+		{
+			rez.push_back(0);
+		}
+	}
+	return rez;
+}
+
 pair<uint64_t, uint64_t> B_M(uint64_t p)
 {
-
+	
 	return pair(1, p);
 }

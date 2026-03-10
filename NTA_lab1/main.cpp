@@ -3,6 +3,6 @@
 int main()
 {
 	vector<unsigned int> f = { 1, 2 };
-	Pol(4000852962116741, 2, f);
+	Pol(1333619851372247, 2, f);
 	return 0;
 }
