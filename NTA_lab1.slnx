@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="NTA_lab1/NTA_lab1.vcxproj" />
+  <Project Path="NTA_lab1/NTA_lab1.vcxproj" Id="b226d218-4af7-47cc-a19a-8cab322db043" />
 </Solution>

@@ -3,7 +3,9 @@
 #include <cmath>
 #include <unordered_set>
 #include <random>
+#include <fstream>
 #include <vector>
+#include <cstdint>
 
 using namespace std;
 
