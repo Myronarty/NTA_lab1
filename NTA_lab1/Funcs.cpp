@@ -6,7 +6,7 @@ pair<uint64_t, uint64_t> lob(uint64_t p)
 	for (int i = 2; i <= 15; i++)
 	{
 		uint64_t d = p / n[i];
-		if (i * d == p)
+		if (n[i] * d == p)
 		{
 			cout << p << " isn't prime, here its dividers: " << n[i] << ", " << d << endl;
 			return pair(n[i], d);
@@ -23,7 +23,6 @@ uint64_t gcd(uint64_t x, uint64_t p)
 		p %= x;
 		swap(x, p);
 	}
-	//cout << p;
 	return p;
 }
 
@@ -154,29 +153,17 @@ pair<uint64_t, uint64_t> Pol(uint64_t p, uint64_t x_0, vector<unsigned int> f)
 	bool t = 1;
 	while (t)
 	{
-		if(x > y)
+		uint64_t temp = (x > y) ? (x - y) : (y - x);
+		uint64_t d = gcd(temp, p);
+		if (d > 1)
 		{
-			uint64_t d = gcd(x - y, p);
-			if (d > 1)
-			{
-				cout << p << " isn't prime, here its dividers: " << p / d << ", " << d << endl;
-				return pair(d, p / d);
-			}
-			x = func(f, p, x);
-			y = func(f, p, func(f, p, y));
+			cout << p << " isn't prime, here its dividers: " << p / d << ", " << d << endl;
+			return pair(d, p / d);
 		}
-		else if (x < y)
-		{
-			uint64_t d = gcd(y - x, p);
-			if (d > 1)
-			{
-				cout << p << " isn't prime, here its dividers: " << p / d << ", " << d << endl;
-				return pair(d, p / d);
-			}
-			x = func(f, p, x);
-			y = func(f, p, func(f, p, y));
-		}
-		else
+		x = func(f, p, x);
+		y = func(f, p, func(f, p, y));
+
+		if (x == y)
 		{
 			return Pol(p, x_0 + 1, f);
 		}
@@ -423,6 +410,109 @@ pair<uint64_t, uint64_t> B_M(uint64_t p)
 	return pair(1, p);
 }
 
+bool is_prime_custom(uint64_t n)
+{
+	if (n < 2) return false;
+	if (n == 2 || n == 3) return true;
+	if (n % 2 == 0) return false;
+
+	mt19937_64 gen(time(0));
+	uniform_int_distribution<uint64_t> distribution(2, n - 1);
+
+	int tochnist = 20;
+	for (int i = 0; i < tochnist; i++)
+	{
+		uint64_t x = distribution(gen);
+
+		uint64_t d = gcd(x, n);
+		if (d > 1)
+		{
+			return false;
+		}
+
+		bool lege_res = Lege(x, n);
+
+		uint64_t jacobi_symbol = lege_res ? 1 : (n - 1);
+
+		uint64_t ssch = pow_mod(x, (n - 1) >> 1, n);
+
+		if (ssch != jacobi_symbol)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+vector<pair<uint64_t, uint64_t>> rozklad(uint64_t n)
+{
+	map<uint64_t, uint64_t> factors_map;
+	vector<uint64_t> pool;
+
+	while (n > 0 && (n % 2 == 0))
+	{
+		factors_map[2]++;
+		n >>= 1;
+	}
+
+	if (n > 1) pool.push_back(n);
+
+	while (!pool.empty())
+	{
+		uint64_t current = pool.back();
+		pool.pop_back();
+
+		if (current == 1) continue;
+
+		// --- КРОК (а) Та (г): Перевірка на простоту ---
+		if (is_prime_custom(current))
+		{
+			factors_map[current]++;
+			//cout << "Found this number: " << current << "\n";
+			continue;
+		}
+
+		// (б)
+		pair<uint64_t, uint64_t> res_lob = lob(current);
+		if (res_lob.first > 1 && res_lob.first <= 47)
+		{
+			pool.push_back(res_lob.first);
+			pool.push_back(res_lob.second);
+			//cout << "Found this numbers: " << res_lob.first << ", " << res_lob.second << "\n";
+			continue;
+		}
+
+		// (в)
+		pair<uint64_t, uint64_t> res_pol = Pol(current, 2, { 1, 0, 2 });
+		if (res_pol.first > 1 && res_pol.first < current)
+		{
+			pool.push_back(res_pol.first);
+			pool.push_back(res_pol.second);
+			//cout << "Found this numbers: " << res_pol.first << ", " << res_pol.second << "\n";
+			continue;
+		}
+
+		// (д)
+		pair<uint64_t, uint64_t> res_bm = B_M(current);
+		if (res_bm.first > 1 && res_bm.first < current)
+		{
+			pool.push_back(res_bm.first);
+			pool.push_back(res_bm.second);
+			//cout << "Found this numbers: " << res_bm.first << ", " << res_bm.second << "\n";
+			continue;
+		}
+
+		cout << "Я не можу знайти канонічний розклад числа :(" << endl;
+		break;
+	}
+
+	vector<pair<uint64_t, uint64_t>> result;
+	for (auto const& [val, pwr] : factors_map)
+	{
+		result.push_back({ val, pwr });
+	}
+	return result;
+}
 
 /*pair<uint64_t, uint64_t> B_M(uint64_t p)
 {
