@@ -238,7 +238,6 @@ pair<vector<int64_t>, vector<int64_t>> D_it(int64_t n, int l)
 
 	return pair(b1_values, b2_values);
 }
-
 //yes, ai knows linal better than me
 vector<vector<int>> solve_gauss_gf2(vector<vector<bool>>& matrix)
 {
@@ -464,11 +463,9 @@ vector<pair<uint64_t, uint64_t>> rozklad(uint64_t n)
 
 		if (current == 1) continue;
 
-		// --- КРОК (а) Та (г): Перевірка на простоту ---
 		if (is_prime_custom(current))
 		{
 			factors_map[current]++;
-			//cout << "Found this number: " << current << "\n";
 			continue;
 		}
 
@@ -478,7 +475,6 @@ vector<pair<uint64_t, uint64_t>> rozklad(uint64_t n)
 		{
 			pool.push_back(res_lob.first);
 			pool.push_back(res_lob.second);
-			//cout << "Found this numbers: " << res_lob.first << ", " << res_lob.second << "\n";
 			continue;
 		}
 
@@ -488,7 +484,6 @@ vector<pair<uint64_t, uint64_t>> rozklad(uint64_t n)
 		{
 			pool.push_back(res_pol.first);
 			pool.push_back(res_pol.second);
-			//cout << "Found this numbers: " << res_pol.first << ", " << res_pol.second << "\n";
 			continue;
 		}
 
@@ -498,7 +493,6 @@ vector<pair<uint64_t, uint64_t>> rozklad(uint64_t n)
 		{
 			pool.push_back(res_bm.first);
 			pool.push_back(res_bm.second);
-			//cout << "Found this numbers: " << res_bm.first << ", " << res_bm.second << "\n";
 			continue;
 		}
 
@@ -513,123 +507,3 @@ vector<pair<uint64_t, uint64_t>> rozklad(uint64_t n)
 	}
 	return result;
 }
-
-/*pair<uint64_t, uint64_t> B_M(uint64_t p)
-{
-	double L = exp(sqrt(0.5) * sqrt(log(p)*log(log(p))));
-	ifstream file("D:/problems/term_6/NTA/lab_1/First10MillionPrimes.txt");
-
-	vector<int64_t> B;
-	B.push_back(-1);
-
-	uint64_t current_num;
-	while ((file >> current_num) && current_num < L*2)
-	{
-		if(Lege(p, current_num))
-		{
-			B.push_back(current_num);
-			cout << current_num << endl;
-		}
-	}
-	file.close();
-
-	auto D_res = D_it(p, L*2);
-	vector<int64_t>& b_1 = D_res.first;
-	vector<int64_t>& b_2 = D_res.second;
-
-	vector<vector<bool>> s;
-	vector<int> smooth_indices;
-	for (size_t i = 0; i < b_2.size(); i++)
-	{
-		bool B_smooth = false;
-		vector<bool> s_i = sdvig_po_faze(B, b_2[i], B_smooth);
-
-		if (B_smooth)
-		{
-			s.push_back(s_i);
-			smooth_indices.push_back(i);
-		}
-
-		if (s.size() > B.size()+10)
-		{
-			break;
-		}
-	}
-	cout << "[DEBUG] Зібрано рядків матриці s: " << s.size() << endl;
-
-	vector<vector<int>> solvs = solve_gauss_gf2(s);
-	cout << solvs.size() << "      ";
-	for (int i = 0; i < solvs.size(); i++)
-	{
-		int64_t _x = 1;
-		int64_t _y = 1;
-		vector<int> powers(B.size(), 0);
-
-		for (int row_idx : solvs[i]) {
-			int orig_idx = smooth_indices[row_idx];
-			_x = mul_mod(_x, (uint64_t)b_1[orig_idx], p);
-
-			// 2. Збираємо степені (важливо: беремо АБСОЛЮТНЕ значення для розкладу)
-			int64_t temp = b_2[orig_idx];
-			if (temp < 0) {
-				powers[0]++; // рахуємо мінуси для Гаусса
-				temp = -temp;
-			}
-			for (size_t j = 1; j < B.size(); j++) {
-				while (temp % B[j] == 0) {
-					powers[j]++;
-					temp /= B[j];
-				}
-			}
-		}
-
-		// 3. Обчислюємо Y
-		// j починаємо з 1, бо корінь з (-1)^(2k) це завжди 1 mod p
-		for (size_t j = 1; j < B.size(); j++) {
-			if (powers[j] > 0) {
-				// powers[j] має бути парним завдяки Гауссу
-				int64_t _power = powers[j] / 2;
-				uint64_t p_pow = pow_mod((uint64_t)B[j], _power, p);
-				_y = mul_mod(_y, p_pow, p);
-			}
-		}
-
-		if (_x != _y && _x != (p - _y))
-		{
-			// DEBUG 1: Перевірка, що Гаусс дійсно зібрав парні степені
-			for (size_t j = 0; j < B.size(); j++) {
-				if (powers[j] % 2 != 0) {
-					cout << "ПОМИЛКА: Гаусс видав непарний степінь для простого числа B[" << j << "]" << endl;
-				}
-			}
-
-			// DEBUG 2: Перевірка головної рівності алгоритму (X^2 == Y^2 mod p)
-			uint64_t x2 = mul_mod(_x, _x, p);
-			uint64_t y2 = mul_mod(_y, _y, p);
-			if (x2 != y2) {
-				cout << "ПОМИЛКА: X^2 != Y^2 mod p. Проблема у генерації або sdvig_po_faze." << endl;
-			}
-
-			// Правильний і безпечний пошук дільників
-			uint64_t sum = (_x + _y) % p;
-			uint64_t diff = (_x > _y) ? (_x - _y) : (_y - _x); // БЕЗПЕЧНЕ віднімання
-
-			uint64_t d_1 = gcd(sum, p);
-			uint64_t d_2 = gcd(diff, p);
-
-			// Перевіряємо кожен дільник ОКРЕМО (достатньо знайти хоча б один)
-			if (d_1 > 1 && d_1 < p)
-			{
-				cout << p << " factored! Dividers: " << d_1 << ", " << p / d_1 << endl;
-				return { d_1, p / d_1 };
-			}
-			if (d_2 > 1 && d_2 < p)
-			{
-				cout << p << " factored! Dividers: " << d_2 << ", " << p / d_2 << endl;
-				return { d_2, p / d_2 };
-			}
-		}
-	}
-	cout << p << " is maybe prime, nothing found ( :) / :( ? )" << endl;
-	return pair(1, p);
-}*/
